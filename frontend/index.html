@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Soteria — Home Safety Dashboard</title>
+  <style>
+    :root { --bg:#0f1216; --panel:#171c22; --line:#262d36; --text:#e6edf3; --muted:#8b97a5; --accent:#4ade80; --danger:#f87171; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background:var(--bg); color:var(--text); }
+    header { padding:14px 20px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:12px; }
+    header h1 { font-size:18px; margin:0; }
+    .badge { font-size:11px; padding:3px 8px; border-radius:999px; background:#16321f; color:var(--accent); border:1px solid #1f5132; }
+    .badge.local::before { content:"🔒 "; }
+    #status { margin-left:auto; font-size:12px; color:var(--muted); }
+    main { display:grid; grid-template-columns: 1.4fr 1fr; gap:16px; padding:16px; }
+    .panel { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px; }
+    .panel h2 { font-size:13px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin:0 0 10px; }
+    #feed { width:100%; aspect-ratio:4/3; background:#000; border-radius:8px; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:13px; }
+    .stack { display:flex; flex-direction:column; gap:16px; }
+    #countdown { font-size:40px; font-weight:700; text-align:center; padding:10px; color:var(--danger); }
+    .log { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:12px; max-height:220px; overflow:auto; }
+    .log div { padding:4px 0; border-bottom:1px solid var(--line); }
+    .log .t { color:var(--muted); }
+    #reasoning { white-space:pre-wrap; font-size:13px; color:#cdd6e0; min-height:60px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Soteria</h1>
+    <span class="badge local">all processing local</span>
+    <span id="status">connecting…</span>
+  </header>
+
+  <main>
+    <div class="stack">
+      <section class="panel">
+        <h2>Live feed</h2>
+        <div id="feed">webcam preview (served by backend / local only)</div>
+      </section>
+      <section class="panel">
+        <h2>Verification countdown</h2>
+        <div id="countdown">—</div>
+      </section>
+    </div>
+
+    <div class="stack">
+      <section class="panel">
+        <h2>Agent reasoning</h2>
+        <div id="reasoning">Idle. Waiting for a detection…</div>
+      </section>
+      <section class="panel">
+        <h2>Events</h2>
+        <div class="log" id="events"></div>
+      </section>
+      <section class="panel">
+        <h2>Alert log</h2>
+        <div class="log" id="alerts"></div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    // Minimal dashboard client. Subscribes to the backend WebSocket /events
+    // stream and routes messages to the relevant panel. TODO: flesh out per
+    // real event schema (detection | agent_reasoning | verification | alert).
+    const statusEl = document.getElementById("status");
+    const eventsEl = document.getElementById("events");
+    const alertsEl = document.getElementById("alerts");
+    const reasoningEl = document.getElementById("reasoning");
+    const countdownEl = document.getElementById("countdown");
+
+    function log(el, text) {
+      const row = document.createElement("div");
+      const ts = new Date().toLocaleTimeString();
+      row.innerHTML = `<span class="t">${ts}</span> — ${text}`;
+      el.prepend(row);
+    }
+
+    function connect() {
+      const ws = new WebSocket(`ws://${location.hostname}:8000/events`);
+      ws.onopen = () => { statusEl.textContent = "connected"; };
+      ws.onclose = () => { statusEl.textContent = "disconnected — retrying…"; setTimeout(connect, 2000); };
+      ws.onmessage = (ev) => {
+        let msg; try { msg = JSON.parse(ev.data); } catch { return; }
+        // TODO: branch on msg.type and update the right panel.
+        switch (msg.type) {
+          case "agent_reasoning": reasoningEl.textContent = msg.payload?.text ?? ""; break;
+          case "verification": countdownEl.textContent = msg.payload?.seconds_left ?? "—"; break;
+          case "alert": log(alertsEl, JSON.stringify(msg.payload)); break;
+          default: log(eventsEl, JSON.stringify(msg));
+        }
+      };
+    }
+    connect();
+  </script>
+</body>
+</html>

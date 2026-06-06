@@ -1,0 +1,21 @@
+# --- Core perception ---
+opencv-python
+ultralytics
+
+# --- Backend / API ---
+fastapi
+uvicorn[standard]
+websockets
+
+# --- Local agent (Ollama) ---
+ollama
+
+# --- Config ---
+pydantic-settings
+python-dotenv
+
+# --- Alerts ---
+requests
+
+# --- Scam-call stretch ---
+faster-whisper

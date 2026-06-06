@@ -1,0 +1,40 @@
+# --- Secrets / config ---
+.env
+.env.*
+!.env.example
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- Virtualenvs ---
+venv/
+.venv/
+env/
+
+# --- Model weights (auto-downloaded; don't commit) ---
+*.pt
+*.onnx
+*.engine
+
+# --- Node / frontend tooling (if added later) ---
+node_modules/
+
+# --- Media / scratch ---
+*.mp4
+*.wav
+*.mp3
+recordings/
+
+# --- OS / editor ---
+.DS_Store
+.idea/
+.vscode/
