@@ -9,7 +9,9 @@ text alert leaves the device — straight to a trusted contact.
 > alert to a trusted contact. Everything on the sensitive data path stays local.
 
 See **[CLAUDE.md](./CLAUDE.md)** for architecture, the agent's tools, setup &
-run commands, conventions, and the definition of done.
+run commands, conventions, and the definition of done. Bench-test recipes
+(e.g. testing the Telegram alert channel in isolation) live in
+**[docs/development_setup.md](./docs/development_setup.md)**.
 
 ## Quick start
 ```bash
