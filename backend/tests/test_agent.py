@@ -16,7 +16,7 @@ from app.agent.agent import VerificationAgent
 from app.agent.backends import ChatResponse, ScriptedChatBackend, ToolCall
 from app.agent.tools import AgentTools
 from app.alerts.base import AlertResult
-from app.event_log import FALL_CANDIDATE, RECOVERY, STILL, EventLog
+from app.event_log import RECOVERY, EventLog
 
 
 class FakeAlerter:
@@ -50,19 +50,6 @@ def _build(script, alerter=None, event_log=None, sleep=_noop_sleep, on_event=Non
 
 
 # --- tool-level unit tests ----------------------------------------------------
-
-
-def test_get_recent_events_reads_log():
-    log = EventLog()
-    log.record(FALL_CANDIDATE, is_fall=True, confidence=0.8)
-    log.record(STILL, is_fall=True, note="still down")
-    tools = AgentTools(event_log=log, alerter=FakeAlerter())
-
-    events = tools.get_recent_events(limit=10)
-
-    assert len(events) == 2
-    assert events[0]["kind"] == FALL_CANDIDATE
-    assert events[-1]["note"] == "still down"
 
 
 def test_timer_detects_recovery_during_wait():
@@ -151,19 +138,20 @@ def test_false_alarm_does_not_escalate():
 
 
 def test_agent_can_inspect_events_before_deciding():
-    """Agent calls get_recent_events, then dismisses based on context."""
+    """Agent uses the verification timer; recovery during the wait dismisses it."""
     log = EventLog()
-    log.record(FALL_CANDIDATE, is_fall=True, confidence=0.65)
-    log.record(RECOVERY, is_fall=False, note="already up")
+
+    async def sleep_then_recover(_seconds):
+        log.record(RECOVERY, is_fall=False, note="already up")
 
     script = [
         ChatResponse(
-            content="Let me check recent activity first.",
-            tool_calls=[ToolCall("get_recent_events", {"limit": 5})],
+            content="Verifying with a short timer first.",
+            tool_calls=[ToolCall("start_verification_timer", {"seconds": 5})],
         ),
-        ChatResponse(content="History shows they already recovered. No action needed."),
+        ChatResponse(content="They recovered. No action needed."),
     ]
-    agent, tools, _ = _build(script, event_log=log)
+    agent, tools, _ = _build(script, event_log=log, sleep=sleep_then_recover)
 
     result = asyncio.run(agent.run({"is_fall": True, "confidence": 0.65}))
 
@@ -179,8 +167,8 @@ def test_on_event_streams_reasoning_and_actions():
 
     script = [
         ChatResponse(
-            content="Checking events.",
-            tool_calls=[ToolCall("get_recent_events", {})],
+            content="Checking with the timer.",
+            tool_calls=[ToolCall("start_verification_timer", {"seconds": 1})],
         ),
         ChatResponse(content="All clear."),
     ]
@@ -212,7 +200,7 @@ def test_unknown_tool_is_handled_gracefully():
 def test_max_steps_prevents_infinite_tool_loops():
     """A model that always calls a tool is stopped by the max-steps cap."""
     loop_forever = [
-        ChatResponse(content="again", tool_calls=[ToolCall("get_recent_events", {})])
+        ChatResponse(content="again", tool_calls=[ToolCall("start_verification_timer", {"seconds": 1})])
         for _ in range(50)
     ]
     log = EventLog()

@@ -1,9 +1,10 @@
 """Shared in-memory event log.
 
 A tiny ring-buffer of recent perception/activity events. The vision pipeline
-*writes* events (fall candidates, motion, recovery); the agent *reads* them via
-its ``get_recent_events`` tool and uses them to judge whether a person recovered
-during the verification grace period.
+*writes* events (fall candidates, motion, recovery); the agent's verification
+timer *reads* them internally to judge whether the person recovered during the
+grace period. The log is not exposed to the LLM as a tool — detections push
+into the agent as the initial prompt.
 
 Kept dependency-free and in-memory on purpose: it lives on-device, nothing here
 ever leaves the machine.

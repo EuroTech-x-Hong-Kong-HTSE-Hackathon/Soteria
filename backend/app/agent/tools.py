@@ -1,10 +1,14 @@
-"""The three tools the Soteria agent can call.
+"""The two tools the Soteria agent can call.
 
-These are the agent's only way to observe the world and to act:
+These are the agent's only way to act on a candidate fall:
 
-    get_recent_events()          -> recent detection/activity events for context
     start_verification_timer()   -> begin grace period, then report recovery signs
     escalate()                   -> notify the trusted contact (Telegram)
+
+The agent does *not* fetch detection history — detections are pushed in as the
+initial user prompt by the perception pipeline (event-driven), and the timer
+inspects the shared ``EventLog`` internally to decide whether the person
+recovered during the grace window.
 
 They are bundled in :class:`AgentTools`, which holds the shared state each tool
 needs (the event log, the alert channel, the grace-period length). This keeps
@@ -16,7 +20,7 @@ stay in sync with the method signatures below.
 
 NOTE: sensor fusion (door / pendant / radar as grounding tools) is future
 roadmap, not Phase 1. The agent confirms a fall from vision alone: a verification
-timer plus recent detection events (did the person get back up, or still down?).
+timer plus a recovery check over the event log.
 """
 
 from __future__ import annotations
@@ -30,7 +34,7 @@ from app.event_log import MOTION, RECOVERY, EventLog
 
 
 class AgentTools:
-    """Stateful bundle of the agent's three tools.
+    """Stateful bundle of the agent's two tools.
 
     Args:
         event_log: where detection events are read from. A fresh one is created
@@ -61,11 +65,6 @@ class AgentTools:
         self.last_alert: dict[str, Any] | None = None
 
     # --- tool 1 -----------------------------------------------------------
-    def get_recent_events(self, limit: int = 10) -> list[dict[str, Any]]:
-        """Return the most recent detection/activity events for context."""
-        return self.event_log.recent(limit)
-
-    # --- tool 2 -----------------------------------------------------------
     async def start_verification_timer(self, seconds: int | None = None) -> dict[str, Any]:
         """Run the grace period, then report whether the person recovered.
 
@@ -88,7 +87,7 @@ class AgentTools:
             "events_since": [e.to_dict() for e in events_since],
         }
 
-    # --- tool 3 -----------------------------------------------------------
+    # --- tool 2 -----------------------------------------------------------
     def escalate(self, reason: str, severity: str = "high") -> dict[str, Any]:
         """Escalate a confirmed fall to the trusted contact.
 
@@ -119,7 +118,6 @@ class AgentTools:
     def registry(self) -> dict[str, Callable[..., Any]]:
         """Tool name -> bound callable, used by the agent loop to dispatch."""
         return {
-            "get_recent_events": self.get_recent_events,
             "start_verification_timer": self.start_verification_timer,
             "escalate": self.escalate,
         }
@@ -128,19 +126,6 @@ class AgentTools:
 # --- Tool schemas for tool-calling --------------------------------------------
 # OpenAI/Ollama-style function specs. Keep in sync with AgentTools above.
 TOOL_SCHEMAS: list[dict[str, Any]] = [
-    {
-        "type": "function",
-        "function": {
-            "name": "get_recent_events",
-            "description": "Get the most recent detection and activity events for context.",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "limit": {"type": "integer", "description": "How many events to return."}
-                },
-            },
-        },
-    },
     {
         "type": "function",
         "function": {

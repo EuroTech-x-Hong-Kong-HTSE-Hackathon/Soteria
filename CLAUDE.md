@@ -103,12 +103,14 @@ cd backend && uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 open frontend/index.html            # or just double-click it
 ```
 
-## The agent's 3 tools
-- **`get_recent_events()`** — recent detection events for context (prior fall
-  candidates, and whether any motion/recovery has been seen since this one).
+## The agent's 2 tools
 - **`start_verification_timer()`** — begin a grace period before escalation, so a
-  recoverable stumble or a false positive doesn't alarm anyone.
+  recoverable stumble or a false positive doesn't alarm anyone. Returns whether
+  motion/recovery was observed during the wait.
 - **`escalate()`** — notify the trusted contact (Telegram). Confirmed falls only.
+
+The agent does not pull detection history; detections push into the agent as
+the initial prompt from the perception pipeline.
 
 ## Conventions
 - Type hints on public functions; small, single-purpose modules.
