@@ -13,15 +13,22 @@ at a third-party cloud. Only outbound *alert* channels
 from __future__ import annotations
 
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# .env lives at the project root (soteria/.env), regardless of where the
+# process is launched from. Anchor to that absolute path so `python -c ...`
+# from backend/ and `uvicorn` from root both pick up the same file.
+_PROJECT_ROOT = Path(__file__).resolve().parents[2]
+_ENV_FILE = _PROJECT_ROOT / ".env"
 
 
 class Settings(BaseSettings):
     """Single typed settings object for the whole backend."""
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=_ENV_FILE,
         env_file_encoding="utf-8",
         extra="ignore",
     )
