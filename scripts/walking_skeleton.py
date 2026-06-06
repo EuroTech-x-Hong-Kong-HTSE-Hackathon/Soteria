@@ -28,34 +28,47 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "backend"))
 
 
 def send_fake_fall_alert() -> None:
-    """Send a single 'fall detected' alert via the configured channel.
+    """Send a single 'fall detected' alert via the configured channel."""
+    from app.alerts.base import get_alerter
 
-    TODO: build the alerter and send. Minimal reference implementation:
-
-        from app.alerts.base import get_alerter
-        result = get_alerter().send(
-            "🚨 Soteria (demo): possible fall detected. This is a walking-skeleton test."
-        )
-        print("alert sent:", result)
-    """
-    raise NotImplementedError
+    result = get_alerter().send(
+        "🚨 Soteria (demo): possible fall detected. This is a walking-skeleton test."
+    )
+    if result.ok:
+        print("alert sent")
+    else:
+        print(f"alert FAILED: {result.detail}")
 
 
 def main() -> int:
-    """Show the webcam feed; 'f' fakes a fall, 'q' quits.
+    """Show the webcam feed; 'f' fakes a fall, 'q' quits."""
+    import cv2
 
-    TODO:
-        import cv2
-        cap = cv2.VideoCapture(CAMERA_INDEX)
+    from app.config import settings
+
+    cap = cv2.VideoCapture(settings.camera_index)
+    if not cap.isOpened():
+        print(f"could not open camera index {settings.camera_index}", file=sys.stderr)
+        return 1
+
+    print("Soteria walking skeleton — press 'f' to fake a fall, 'q' to quit.")
+    try:
         while True:
             ok, frame = cap.read()
+            if not ok:
+                print("camera read failed", file=sys.stderr)
+                return 1
+
             cv2.imshow("Soteria — walking skeleton", frame)
             key = cv2.waitKey(1) & 0xFF
-            if key == ord("f"): send_fake_fall_alert()
-            elif key == ord("q"): break
-        cap.release(); cv2.destroyAllWindows()
-    """
-    raise NotImplementedError
+            if key == ord("f"):
+                send_fake_fall_alert()
+            elif key == ord("q"):
+                break
+    finally:
+        cap.release()
+        cv2.destroyAllWindows()
+    return 0
 
 
 if __name__ == "__main__":
