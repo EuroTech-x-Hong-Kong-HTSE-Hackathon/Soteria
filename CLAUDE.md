@@ -37,6 +37,16 @@ perception ──▶ agent ──▶ verify ──▶ alert      (all local exce
 > from vision alone (verification timer + recovery check). See the roadmap in the
 > Notion "Final Idea Page".
 
+> **Deployment & pitch positioning.** We lead with a **self-hosted cloud we host
+> and operate** (families maintain no hardware, nothing to update). A fully
+> **on-device edge runtime is a roadmap option** for residents most skeptical of
+> any data leaving the home. Either way it's **our own OSS models on
+> infrastructure we control — never a third-party AI provider**, which is the
+> privacy claim. The **demo runs a local model on a laptop** (which doubles as
+> the edge proof). **Demo-only fallback:** if the local model is too inaccurate
+> or non-deterministic, fall back to Claude API calls (same agent + prompts) —
+> reliability insurance for the demo; production stays self-hosted OSS.
+
 ## Tech stack
 - Python 3.11+ backend
 - OpenCV (webcam capture)
@@ -102,15 +112,19 @@ open frontend/index.html            # or just double-click it
 
 ## Conventions
 - Type hints on public functions; small, single-purpose modules.
-- **NO cloud calls on the sensitive data path** — perception, agent, and audio
-  all run locally. Only the alert channel reaches the network, with text only.
+- **No third-party AI provider on the sensitive data path** — perception, agent,
+  and audio run on our own OSS models (local for the demo; a self-hosted cloud we
+  operate in production). Only the alert channel reaches the network, with text
+  only. (Demo-only exception: a Claude API fallback if the local model is unreliable.)
 - Secrets live only in `.env` (never committed); read them via `app.config.settings`.
 - Keep the `Alerter` interface backend-agnostic (Telegram now, Twilio behind it).
 
 ## Guardrails
 - **16-hour build.** Prefer stubs + the walking skeleton first; make the pipe work
   end-to-end before deepening any one stage.
-- **Local / OSS only** on the sensitive data path. No third-party cloud inference.
+- **Our own OSS models only** on the sensitive data path — never a third-party AI
+  provider. Demo runs local (Ollama); production leads with a self-hosted cloud we
+  operate. A Claude API fallback is allowed as a demo-only reliability contingency.
 - Don't add heavy dependencies without a clear reason.
 - **NEVER auto-call emergency services.** Soteria escalates to pre-approved trusted
   contacts only — a human stays in the loop for any 911/112 decision.

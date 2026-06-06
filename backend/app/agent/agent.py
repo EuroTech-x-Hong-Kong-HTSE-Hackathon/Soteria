@@ -5,6 +5,11 @@ decision about a candidate fall. The agent reasons over recent detection events,
 can start a verification timer, and escalates only when a fall is confirmed.
 
 Runs against a LOCAL Ollama server — no data leaves the device here.
+
+DEMO FALLBACK: if the local model proves too inaccurate or non-deterministic,
+swap the chat backend for Claude API calls (keep the same system prompt + tool
+schemas). This is a demo-only reliability contingency — the production privacy
+story stays self-hosted OSS (our own models, never a third-party AI provider).
 """
 
 from __future__ import annotations
