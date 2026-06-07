@@ -30,6 +30,17 @@ from fastapi.responses import StreamingResponse
 from app.config import settings
 from app.pipeline import pipeline
 
+# Make our app loggers visible regardless of how the process is launched.
+# uvicorn's own log config doesn't reach `app.*` loggers by default — without
+# this, the perception/agent/alert lifecycle lines (frame N..., agent: ...,
+# worker: ...) silently disappear under the uvicorn launcher.
+logging.getLogger("app").setLevel(getattr(logging, settings.log_level.upper(), logging.INFO))
+if not logging.getLogger().handlers:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    )
+
 log = logging.getLogger(__name__)
 
 
