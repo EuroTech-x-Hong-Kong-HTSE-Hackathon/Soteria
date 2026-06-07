@@ -55,15 +55,27 @@ class Pipeline:
         self.event_log = event_log or EventLog()
         self.camera = camera or Camera()
         self.detectors = detectors if detectors is not None else build_enabled_detectors()
-        self.agent = agent or VerificationAgent(
-            event_log=self.event_log,
-            on_event=self._emit_from_agent,
-        )
         self._candidates: asyncio.Queue[dict[str, Any]] = asyncio.Queue()
         self._subscribers: list[asyncio.Queue[Event]] = []
         self._latest_frame: Any = None
         self._latest_results: dict[str, DetectionResult] = {}
         self._stop = asyncio.Event()
+
+        # Build the alerter ourselves so we can register a snapshot provider
+        # *before* the agent's escalate() tool calls it. Default off — the
+        # provider is wired but only consulted when SEND_SNAPSHOT_ON_ALERT=true.
+        from app.agent.tools import AgentTools
+        from app.alerts.base import get_alerter
+
+        self.alerter = get_alerter()
+        if hasattr(self.alerter, "snapshot_provider"):
+            self.alerter.snapshot_provider = self._get_snapshot_bytes
+
+        self.agent = agent or VerificationAgent(
+            tools=AgentTools(event_log=self.event_log, alerter=self.alerter),
+            event_log=self.event_log,
+            on_event=self._emit_from_agent,
+        )
 
     # --- subscription ---------------------------------------------------------
     def subscribe(self) -> AsyncIterator[Event]:
@@ -87,6 +99,19 @@ class Pipeline:
                 q.put_nowait(event)
             except asyncio.QueueFull:
                 log.warning("subscriber queue full; dropping event %s", event.type)
+
+    def _get_snapshot_bytes(self) -> bytes | None:
+        """JPEG-encode the most recent frame for the alerter (opt-in egress)."""
+        frame = self._latest_frame
+        if frame is None:
+            return None
+        try:
+            import cv2
+
+            ok, buf = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
+        except Exception:
+            return None
+        return buf.tobytes() if ok else None
 
     def _emit_from_agent(self, event_type: str, payload: dict[str, Any]) -> None:
         # The agent's on_event hook is sync-or-async; we just fan out as-is.

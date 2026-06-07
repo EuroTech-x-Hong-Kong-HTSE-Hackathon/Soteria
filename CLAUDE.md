@@ -117,7 +117,10 @@ the initial prompt from the perception pipeline.
 - **No third-party AI provider on the sensitive data path** — perception, agent,
   and audio run on our own OSS models (local for the demo; a self-hosted cloud we
   operate in production). Only the alert channel reaches the network, with text
-  only. (Demo-only exception: a Claude API fallback if the local model is unreliable.)
+  only by default. (Demo-only exception: a Claude API fallback if the local model
+  is unreliable. Operator-opt-in exception: `SEND_SNAPSHOT_ON_ALERT=true` attaches
+  the frame at confirmation as a JPEG — the single documented departure from
+  text-only egress, off by default.)
 - Secrets live only in `.env` (never committed); read them via `app.config.settings`.
 - Keep the `Alerter` interface backend-agnostic (Telegram now, Twilio behind it).
 

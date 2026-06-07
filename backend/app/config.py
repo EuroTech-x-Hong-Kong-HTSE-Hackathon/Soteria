@@ -59,6 +59,10 @@ class Settings(BaseSettings):
     alert_channel: str = "telegram"  # telegram | twilio
     telegram_bot_token: str = ""
     telegram_chat_id: str = ""
+    # Privacy: default is text-only egress. Flipping this to True attaches the
+    # frame at the moment of escalation as a JPEG, which is the single
+    # documented exception to the text-only rule.
+    send_snapshot_on_alert: bool = False
 
     # --- Alerts (Twilio, optional) ---
     twilio_account_sid: str = ""
