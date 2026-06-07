@@ -292,7 +292,7 @@ Page Structure:
 3. "Care circle" row (under the hero card):
    - Section label, 12px Text Muted uppercase: "CARE CIRCLE".
    - Horizontal scroll of round 56px avatars with first names below
-     ("You", "Tom", "Carer Anna"). A green dot on avatars who are reachable.
+     ("You", "Tom"). A green dot on avatars who are reachable.
    - 40px-tall pill at the end "Invite someone" with a + icon, dashed 1px
      Line border.
 
