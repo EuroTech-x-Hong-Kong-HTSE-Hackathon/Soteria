@@ -90,7 +90,24 @@ class Pipeline:
 
     def _emit_from_agent(self, event_type: str, payload: dict[str, Any]) -> None:
         # The agent's on_event hook is sync-or-async; we just fan out as-is.
-        self._emit(Event(type=f"agent_{event_type}" if not event_type.startswith("agent_") else event_type, payload=payload))
+        full_type = event_type if event_type.startswith("agent_") else f"agent_{event_type}"
+        # Console visibility for the agent lifecycle — without this, agent
+        # events only reach dashboard subscribers and the terminal stays silent.
+        if event_type == "agent_started":
+            log.info("agent: started for %s", payload.get("detection"))
+        elif event_type == "agent_reasoning":
+            text = (payload.get("text") or "").strip().replace("\n", " ")
+            log.info("agent: reasoning step %s — %s", payload.get("step"), text[:160])
+        elif event_type == "agent_action":
+            log.info("agent: tool %s args=%s", payload.get("tool"), payload.get("arguments"))
+        elif event_type == "tool_result":
+            log.info("agent: tool %s result=%s", payload.get("tool"), str(payload.get("result"))[:160])
+        elif event_type == "agent_done":
+            log.info(
+                "agent: done escalated=%s confirmed=%s",
+                payload.get("escalated"), payload.get("confirmed"),
+            )
+        self._emit(Event(type=full_type, payload=payload))
 
     # --- main loop ------------------------------------------------------------
     async def run(self) -> None:
@@ -200,10 +217,13 @@ class Pipeline:
                 candidate = await asyncio.wait_for(self._candidates.get(), timeout=0.5)
             except asyncio.TimeoutError:
                 continue
+            log.info("worker: picked up candidate %s", candidate)
             try:
                 result = await self.agent.run(candidate)
+                outcome = "alert" if result.escalated else "dismissed"
+                log.info("worker: %s — %s", outcome, result.summary)
                 self._emit(Event(
-                    type="alert" if result.escalated else "dismissed",
+                    type=outcome,
                     payload={"escalated": result.escalated, "summary": result.summary},
                 ))
             except Exception as exc:
