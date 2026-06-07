@@ -136,9 +136,11 @@ class Pipeline:
     # --- capture + detect -----------------------------------------------------
     async def _capture_loop(self) -> None:
         # Per-detector state: when did the current candidate start? have we already
-        # enqueued it? Tracked separately so detectors don't interfere.
+        # enqueued it? When did the latest negative streak begin? Tracked
+        # separately so detectors don't interfere.
         candidate_started: dict[str, float | None] = {d.name: None for d in self.detectors}
         candidate_active: dict[str, bool] = {d.name: False for d in self.detectors}
+        recovery_started: dict[str, float | None] = {d.name: None for d in self.detectors}
         frame_count = 0
         log_every = 15  # frames; ~once per half-second at 30fps
 
@@ -169,6 +171,9 @@ class Pipeline:
                 ))
 
                 if result.is_positive:
+                    # Cancel any pending recovery — a single positive frame
+                    # mid-fall is enough to reset the debounce timer.
+                    recovery_started[det.name] = None
                     if candidate_started[det.name] is None:
                         candidate_started[det.name] = time.time()
                     elapsed = time.time() - candidate_started[det.name]
@@ -177,18 +182,28 @@ class Pipeline:
                         self._record_candidate(det.name, result)
                 else:
                     if candidate_active[det.name]:
-                        # Detector lost the positive — likely recovery / movement.
-                        self.event_log.record(
-                            RECOVERY,
-                            is_fall=False,
-                            note=f"{det.name} detector no longer positive",
-                        )
-                        self._emit(Event(type="recovery", payload={"detector": det.name}))
-                        candidate_active[det.name] = False
+                        # Negative inside an active candidate — start (or continue)
+                        # the recovery debounce. Only fires RECOVERY once the
+                        # detector has stayed sub-threshold for the configured
+                        # window, so a single dropped frame doesn't dismiss
+                        # someone who's still on the floor.
+                        if recovery_started[det.name] is None:
+                            recovery_started[det.name] = time.time()
+                        elif time.time() - recovery_started[det.name] >= settings.pipeline_recovery_seconds:
+                            self.event_log.record(
+                                RECOVERY,
+                                is_fall=False,
+                                note=f"{det.name} detector sub-threshold for "
+                                     f"{settings.pipeline_recovery_seconds:.1f}s",
+                            )
+                            self._emit(Event(type="recovery", payload={"detector": det.name}))
+                            candidate_active[det.name] = False
+                            recovery_started[det.name] = None
+                            candidate_started[det.name] = None
                     elif candidate_started[det.name] is not None:
-                        # Brief blip didn't persist — log motion only.
+                        # Brief blip never reached candidate threshold — log motion.
                         self.event_log.record(MOTION, is_fall=False)
-                    candidate_started[det.name] = None
+                        candidate_started[det.name] = None
 
             # Yield to the loop so display + worker get scheduled.
             await asyncio.sleep(0)

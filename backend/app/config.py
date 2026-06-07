@@ -48,6 +48,7 @@ class Settings(BaseSettings):
     show_perception_window: bool = True
     show_detector_overlay: bool = False
     pipeline_min_confirm_seconds: float = 1.0
+    pipeline_recovery_seconds: float = 1.5
     verification_timer_seconds: int = 20
 
     # --- Agent (Ollama, local) ---
