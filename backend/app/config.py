@@ -40,8 +40,12 @@ class Settings(BaseSettings):
 
     # --- Camera / perception ---
     camera_index: int = 0
-    yolo_pose_model: str = "yolo11n-pose.pt"
+    fall_detector_repo: str = "melihuzunoglu/human-fall-detection"
+    fall_detector_filename: str = "best.pt"
     fall_confidence_threshold: float = 0.6
+    enabled_detectors: list[str] = ["fall"]
+    show_perception_window: bool = True
+    pipeline_min_confirm_seconds: float = 1.0
     verification_timer_seconds: int = 20
 
     # --- Agent (Ollama, local) ---

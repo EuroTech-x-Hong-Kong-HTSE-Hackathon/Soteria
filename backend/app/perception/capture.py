@@ -26,30 +26,34 @@ class Camera:
         self._cap: Any = None  # cv2.VideoCapture
 
     def open(self) -> None:
-        """Open the capture device.
+        """Open the capture device. Raises if it fails."""
+        import cv2
 
-        TODO: ``import cv2; self._cap = cv2.VideoCapture(self.index)`` and
-        raise if it fails to open.
-        """
-        raise NotImplementedError
+        self._cap = cv2.VideoCapture(self.index)
+        if not self._cap.isOpened():
+            self._cap = None
+            raise RuntimeError(f"could not open camera index {self.index}")
 
     def read(self) -> Any:
-        """Read a single frame (BGR ndarray). Returns None on failure.
-
-        TODO: ``ok, frame = self._cap.read()``; return frame or None.
-        """
-        raise NotImplementedError
+        """Read a single frame (BGR ndarray). Returns None on failure."""
+        if self._cap is None:
+            return None
+        ok, frame = self._cap.read()
+        return frame if ok else None
 
     def frames(self) -> Iterator[Any]:
-        """Yield frames until the stream ends or is closed.
-
-        TODO: loop calling ``read()`` and yield non-None frames.
-        """
-        raise NotImplementedError
+        """Yield frames until the stream ends or is closed."""
+        while True:
+            frame = self.read()
+            if frame is None:
+                return
+            yield frame
 
     def release(self) -> None:
         """Release the capture device."""
-        # TODO: self._cap.release() if open.
+        if self._cap is not None:
+            self._cap.release()
+            self._cap = None
 
     def __enter__(self) -> "Camera":
         self.open()

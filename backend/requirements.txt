@@ -1,6 +1,7 @@
 # --- Core perception ---
 opencv-python
 ultralytics
+huggingface_hub
 
 # --- Backend / API ---
 fastapi
