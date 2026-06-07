@@ -1,0 +1,113 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@theme {
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Manrope", ui-sans-serif, system-ui, sans-serif;
+
+  /* Soteria palette */
+  --color-background: #0d141c;
+  --color-surface: #0d141c;
+  --color-surface-dim: #0d141c;
+  --color-surface-bright: #333a43;
+  --color-surface-container-lowest: #080f17;
+  --color-surface-container-low: #151c25;
+  --color-surface-container: #192029;
+  --color-surface-container-high: #242b33;
+  --color-surface-container-highest: #2e353f;
+  --color-surface-variant: #2e353f;
+
+  --color-on-surface: #dce3ef;
+  --color-on-surface-variant: #c5c6cb;
+  --color-on-background: #dce3ef;
+
+  --color-primary: #c5c6cc;
+  --color-on-primary: #2e3135;
+  --color-primary-fixed: #e1e2e8;
+  --color-primary-fixed-dim: #c5c6cc;
+
+  --color-secondary: #cbc6bd;
+  --color-secondary-container: #4c4942;
+  --color-on-secondary-container: #bdb8af;
+
+  --color-tertiary: #4de082;
+  --color-tertiary-fixed: #6dfe9c;
+  --color-tertiary-fixed-dim: #4de082;
+  --color-tertiary-container: #001606;
+  --color-on-tertiary: #003919;
+
+  --color-error: #ffb4ab;
+  --color-on-error: #690005;
+  --color-error-container: #93000a;
+  --color-on-error-container: #ffdad6;
+
+  --color-outline: #8f9195;
+  --color-outline-variant: #45474a;
+
+  --color-privacy-bg: #16321F;
+  --color-privacy-fg: #4ADE80;
+
+  --color-warning: #FCD34D;
+
+  --radius: 0.5rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-gutter: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+}
+
+@layer base {
+  html, body, #root {
+    height: 100%;
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-on-surface);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  * {
+    border-color: var(--color-outline-variant);
+  }
+
+  .material-symbols-outlined {
+    font-family: "Material Symbols Outlined";
+    font-weight: normal;
+    font-style: normal;
+    font-size: 24px;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    font-feature-settings: "liga";
+    -webkit-font-feature-settings: "liga";
+    -webkit-font-smoothing: antialiased;
+    font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+  }
+  .material-symbols-outlined.fill {
+    font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+  }
+
+  .tabular-nums { font-variant-numeric: tabular-nums; }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #2e353f; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #45474a; }
+}
+
+@utility map-grid-bg {
+  background-size: 40px 40px;
+  background-image:
+    linear-gradient(to right, rgba(143, 145, 149, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(143, 145, 149, 0.05) 1px, transparent 1px);
+}
