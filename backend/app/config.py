@@ -45,6 +45,7 @@ class Settings(BaseSettings):
     fall_confidence_threshold: float = 0.6
     enabled_detectors: list[str] = ["fall"]
     show_perception_window: bool = True
+    show_detector_overlay: bool = False
     pipeline_min_confirm_seconds: float = 1.0
     verification_timer_seconds: int = 20
 

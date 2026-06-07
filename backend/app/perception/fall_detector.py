@@ -20,9 +20,9 @@ from app.perception.base import Detector, DetectionResult
 
 log = logging.getLogger(__name__)
 
-# Lower than our trigger threshold so ultralytics doesn't silently drop
-# borderline detections; we apply our real threshold ourselves.
-_RAW_CONF_FLOOR = 0.05
+# Matches ultralytics' default — keeps the overlay readable while still letting
+# us see borderline detections via the per-frame confidence logs in the pipeline.
+_RAW_CONF_FLOOR = 0.25
 
 
 class FallDetector(Detector):
@@ -66,13 +66,19 @@ class FallDetector(Detector):
         if self._model is None:
             raise RuntimeError("FallDetector.load() must be called before detect().")
 
-        results = self._model(frame, verbose=False, conf=_RAW_CONF_FLOOR)
+        results = self._model(
+            frame,
+            verbose=False,
+            conf=_RAW_CONF_FLOOR,
+            iou=0.4,
+            agnostic_nms=True,  # collapse overlapping boxes across classes
+            max_det=2,          # at most 2 people per frame for this demo
+        )
         if not results:
             return DetectionResult(self.name, False, 0.0)
 
         first = results[0]
         confidence = 0.0
-        raw: Any = None
 
         # Classification head (yolo11n-cls and similar): `.probs` carries
         # per-class probabilities; pick the fall class if known, else top-1.
@@ -83,7 +89,6 @@ class FallDetector(Detector):
                 confidence = float(data[self._fall_class_id])
             else:
                 confidence = float(max(data)) if data else 0.0
-            raw = probs
 
         # Detection head: `.boxes` carries per-detection conf + cls.
         boxes = getattr(first, "boxes", None)
@@ -96,11 +101,10 @@ class FallDetector(Detector):
                     confidence = max(confidence, float(max(fall_confs)))
             elif confs:
                 confidence = max(confidence, float(max(confs)))
-            raw = boxes
 
         return DetectionResult(
             detector=self.name,
             is_positive=confidence >= self.threshold,
             confidence=confidence,
-            raw=raw,
+            raw=first,  # full Results object so display can call .plot() for YOLO-style overlay
         )

@@ -221,7 +221,15 @@ class Pipeline:
         while not self._stop.is_set():
             frame = self._latest_frame
             if frame is not None:
-                annotated = frame.copy()
+                annotated = None
+                if settings.show_detector_overlay:
+                    # Use any detector's Results.plot() for native YOLO-style boxes.
+                    for result in self._latest_results.values():
+                        if hasattr(result.raw, "plot"):
+                            annotated = result.raw.plot()
+                            break
+                if annotated is None:
+                    annotated = frame.copy()
                 for det_name, result in self._latest_results.items():
                     label = f"{det_name}: {result.confidence:.2f}"
                     color = (0, 0, 255) if result.is_positive else (0, 255, 0)
@@ -229,7 +237,7 @@ class Pipeline:
                         annotated, label, (10, 30 + 25 * list(self._latest_results).index(det_name)),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2,
                     )
-                cv2.imshow("Soteria — perception", annotated)
+                cv2.imshow("Soteria - perception", annotated)
             if (cv2.waitKey(1) & 0xFF) == ord("q"):
                 self._stop.set()
                 break
