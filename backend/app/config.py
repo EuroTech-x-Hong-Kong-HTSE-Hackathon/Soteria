@@ -40,7 +40,8 @@ class Settings(BaseSettings):
 
     # --- Camera / perception ---
     camera_index: int = 0
-    fall_detector_repo: str = "melihuzunoglu/human-fall-detection"
+    pose_model: str = "yolo11n-pose.pt"  # default detector: Ultralytics YOLO-pose (auto-downloaded)
+    fall_detector_repo: str = "melihuzunoglu/human-fall-detection"  # legacy "fall_box" model
     fall_detector_filename: str = "best.pt"
     fall_confidence_threshold: float = 0.6
     enabled_detectors: list[str] = ["fall"]

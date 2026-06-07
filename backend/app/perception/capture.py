@@ -26,10 +26,25 @@ class Camera:
         self._cap: Any = None  # cv2.VideoCapture
 
     def open(self) -> None:
-        """Open the capture device. Raises if it fails."""
+        """Open the capture device. Raises if it fails.
+
+        On Windows the default MSMF backend is flaky (intermittent
+        ``can't grab frame`` errors and clashes when a device is briefly held by
+        another process), so prefer DirectShow there and fall back to the
+        default backend if it won't open.
+        """
+        import sys
+
         import cv2
 
-        self._cap = cv2.VideoCapture(self.index)
+        if sys.platform == "win32":
+            self._cap = cv2.VideoCapture(self.index, cv2.CAP_DSHOW)
+            if not self._cap.isOpened():
+                self._cap.release()
+                self._cap = cv2.VideoCapture(self.index)  # fall back to default
+        else:
+            self._cap = cv2.VideoCapture(self.index)
+
         if not self._cap.isOpened():
             self._cap = None
             raise RuntimeError(f"could not open camera index {self.index}")

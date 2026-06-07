@@ -57,4 +57,5 @@ class Detector(ABC):
 # ``app.event_log`` so the agent's tool layer also knows about them.
 EVENT_KINDS: dict[str, str] = {
     "fall": FALL_CANDIDATE,
+    "fall_box": FALL_CANDIDATE,
 }
