@@ -6,15 +6,12 @@
   --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Manrope", ui-sans-serif, system-ui, sans-serif;
 
-<<<<<<< HEAD
   /* Soteria palette */
   --color-background: #0d141c;
-=======
 /* Soteria design tokens */
 @theme {
   --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
 
->>>>>>> e6c874ee848cc61b9e38eed57db96f506df3bf21
   --color-surface: #0d141c;
   --color-surface-dim: #0d141c;
   --color-surface-bright: #333a43;
@@ -24,8 +21,6 @@
   --color-surface-container-high: #242b33;
   --color-surface-container-highest: #2e353f;
   --color-surface-variant: #2e353f;
-<<<<<<< HEAD
-=======
   --color-surface-tint: #c5c6cc;
   --color-on-surface: #dce3ef;
   --color-on-surface-variant: #c5c6cb;
@@ -167,7 +162,6 @@
  * 1. Add the variable to :root (light value) and .dark (dark value)
  * 2. Register it in @theme inline as --color-<name>: var(--<name>)
  */
->>>>>>> e6c874ee848cc61b9e38eed57db96f506df3bf21
 
   --color-on-surface: #dce3ef;
   --color-on-surface-variant: #c5c6cb;
@@ -219,11 +213,9 @@
   }
   body {
     background-color: var(--color-background);
-<<<<<<< HEAD
     color: var(--color-on-surface);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
-=======
     color: var(--color-on-background);
     font-family: var(--font-sans);
   }
@@ -235,7 +227,6 @@
   }
   .w-full {
     width: 100%;
->>>>>>> e6c874ee848cc61b9e38eed57db96f506df3bf21
   }
   * {
     border-color: var(--color-outline-variant);
