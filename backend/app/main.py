@@ -25,7 +25,7 @@ from typing import Any
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import Response, StreamingResponse
 
 from app.config import settings
 from app.pipeline import pipeline
@@ -145,6 +145,20 @@ async def video() -> StreamingResponse:
         _mjpeg_stream(),
         media_type="multipart/x-mixed-replace; boundary=frame",
     )
+
+
+@app.get("/alerts/latest/snapshot.jpg")
+async def latest_alert_snapshot() -> Response:
+    """JPEG captured at the moment of the most recent confirmed escalation.
+
+    Returns 404 until a fall has been confirmed in this run. Stays in process
+    memory only — never leaves the device on its own; opt-in Telegram egress
+    is handled separately on the alerter side.
+    """
+    snap, _ts = pipeline.last_alert_snapshot()
+    if snap is None:
+        return Response(status_code=404)
+    return Response(content=snap, media_type="image/jpeg")
 
 
 @app.websocket("/events")
