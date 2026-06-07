@@ -1,11 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FamilyNav } from "@/components/soteria/FamilyNav";
 import { PrivacyPill } from "@/components/soteria/PrivacyPill";
 
-// The backend (FastAPI) serves the live camera as an MJPEG stream. Run it on the
-// same machine as the camera; see backend/app/main.py.
-const VIDEO_URL = "http://localhost:8000/video";
+// The backend (FastAPI) serves the live camera as an MJPEG stream. We can't
+// hardcode "localhost" because that resolves to the *viewing device* — when
+// the trusted contact opens this page on their phone, "localhost" is their
+// phone, not the backend host. Instead we derive the host from
+// window.location.hostname so the page always points back at whatever
+// machine served the dashboard. Override with VITE_BACKEND_URL if the
+// backend lives elsewhere.
+const BACKEND_PORT = 8000;
 
 export const Route = createFileRoute("/family/live")({
   head: () => ({
@@ -23,13 +28,19 @@ export const Route = createFileRoute("/family/live")({
 
 function FamilyLive() {
   const [offline, setOffline] = useState(false);
-  // No cache-buster: the backend serves multipart/x-mixed-replace and the
-  // browser keeps one connection open, refreshing the <img> automatically as
-  // new JPEG parts arrive. A unique src per render would force a new request
-  // on every render (one frame each, then ERR_INCOMPLETE_CHUNKED_ENCODING) and
-  // also break SSR hydration since Date.now() differs on server vs client.
-  // The Retry button below toggles `offline`, which remounts the <img> and
-  // naturally opens a fresh stream.
+  // Resolved on the client only: SSR can't know the browser's hostname, and
+  // hardcoding one would break either localhost dev or LAN-from-phone access.
+  // Until the URL is set, the <img> isn't rendered — no broken-image icon.
+  const [videoUrl, setVideoUrl] = useState<string>("");
+
+  useEffect(() => {
+    const override = (import.meta as { env?: { VITE_BACKEND_URL?: string } }).env?.VITE_BACKEND_URL;
+    if (override) {
+      setVideoUrl(`${override.replace(/\/$/, "")}/video`);
+      return;
+    }
+    setVideoUrl(`${window.location.protocol}//${window.location.hostname}:${BACKEND_PORT}/video`);
+  }, []);
 
   return (
     <div className="min-h-screen bg-surface text-on-surface flex justify-center">
@@ -51,13 +62,15 @@ function FamilyLive() {
         <main className="flex-1 px-margin-mobile py-lg flex flex-col gap-lg">
           <section className="rounded-xl overflow-hidden bg-surface-container border border-outline-variant/50">
             <div className="aspect-video relative bg-black flex items-center justify-center">
-              {!offline ? (
+              {!offline && videoUrl ? (
                 <img
-                  src={VIDEO_URL}
+                  src={videoUrl}
                   alt="Live camera feed"
                   className="w-full h-full object-contain"
                   onError={() => setOffline(true)}
                 />
+              ) : !offline ? (
+                <div className="text-on-surface-variant text-body-md">Connecting…</div>
               ) : (
                 <div className="flex flex-col items-center gap-sm text-on-surface-variant px-lg text-center">
                   <span className="material-symbols-outlined" style={{ fontSize: 48 }}>
