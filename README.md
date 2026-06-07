@@ -20,7 +20,11 @@ pip install -r backend/requirements.txt
 cp .env.example .env          # add TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID
 ollama pull llama3.2
 python scripts/walking_skeleton.py   # webcam → press 'f' to fake a fall → Telegram
+python scripts/run_pipeline.py       # webcam → real fall detection → agent → Telegram
 ```
+First run of `run_pipeline.py` downloads the YOLOv11 fall model into
+`~/.cache/huggingface/` (cached after that). Press `q` in the perception
+window to quit cleanly.
 
 ## Status
 🚧 Hackathon MVP scaffold — modules are stubs with signatures, docstrings, and

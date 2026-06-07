@@ -84,3 +84,47 @@ python scripts/walking_skeleton.py
   `setopt no_bang_hist` for the session.
 - **One venv at the project root** (`soteria/venv/`), not inside `backend/`.
   Scripts in `scripts/` and the backend share dependencies.
+
+## Testing the perception pipeline
+
+The full hero flow — webcam → detector(s) → agent → Telegram — runs from one
+entry point:
+
+```bash
+python scripts/run_pipeline.py
+```
+
+A perception window opens with per-detector confidence overlays (green = below
+threshold, red = above). On the console you'll see `detection` events
+streaming, then a `candidate` once a positive persists past
+`PIPELINE_MIN_CONFIRM_SECONDS`, then the agent's reasoning, the verification
+timer, and either an `alert` or a `dismissed` event. Press `q` in the window
+to quit cleanly.
+
+**Model cache.** The first run downloads the YOLOv11 weights from Hugging Face
+into `~/.cache/huggingface/`. Subsequent runs reuse the cache (no network).
+
+**Common failures.**
+
+| Symptom | Cause |
+|---|---|
+| `could not open camera index 0` | Camera in use by another app, or terminal needs camera permission (System Settings → Privacy & Security → Camera) |
+| `OSError: ... not found` from `hf_hub_download` | Wrong `FALL_DETECTOR_FILENAME` for that repo — check the repo's "Files" tab |
+| Agent never escalates even on a real fall | Verification timer is 20s by default; check `VERIFICATION_TIMER_SECONDS`. Also confirm the alerter works on its own (see above). |
+
+### Adding a new detector
+
+The pipeline is detector-agnostic. To plug in a new model (intruder, heart
+attack, etc.):
+
+1. **Subclass `Detector`** in `backend/app/perception/<name>_detector.py`.
+   Set `name`, implement `load()` and `detect(frame) -> DetectionResult`.
+2. **Map its event kind** in `backend/app/perception/base.py` `EVENT_KINDS`
+   (declare a new kind in `backend/app/event_log.py` if needed, e.g.
+   `INTRUDER_CANDIDATE`).
+3. **Register it** in `backend/app/perception/registry.py` `_BUILDERS` and
+   add the name to `ENABLED_DETECTORS` in `.env`.
+
+The pipeline will then run it on every frame alongside the others, with
+independent persistence tracking and a shared candidate queue feeding the
+single verification agent.
