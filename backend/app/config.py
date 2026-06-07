@@ -66,6 +66,7 @@ class Settings(BaseSettings):
 
     # --- Scam-call stretch ---
     whisper_model: str = "base"
+    scam_confidence_threshold: float = 0.7  # alert only at/above this confidence
 
 
 @lru_cache
