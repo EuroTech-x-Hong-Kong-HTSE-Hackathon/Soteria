@@ -113,6 +113,15 @@ class Pipeline:
             return None
         return buf.tobytes() if ok else None
 
+    def snapshot(self) -> tuple[Any, dict[str, DetectionResult]]:
+        """Return the latest frame + per-detector results for the dashboard.
+
+        Used by the FastAPI ``/video`` MJPEG endpoint so the dashboard sees
+        the same view the agent reasons over. ``frame`` is None until the
+        capture loop has produced its first frame.
+        """
+        return self._latest_frame, dict(self._latest_results)
+
     def _emit_from_agent(self, event_type: str, payload: dict[str, Any]) -> None:
         # The agent's on_event hook is sync-or-async; we just fan out as-is.
         full_type = event_type if event_type.startswith("agent_") else f"agent_{event_type}"

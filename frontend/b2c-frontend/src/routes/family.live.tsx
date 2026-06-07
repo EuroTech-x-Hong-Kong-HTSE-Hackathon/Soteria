@@ -23,8 +23,13 @@ export const Route = createFileRoute("/family/live")({
 
 function FamilyLive() {
   const [offline, setOffline] = useState(false);
-  // Cache-bust on remount so a reconnect re-requests the stream.
-  const [src] = useState(() => `${VIDEO_URL}?t=${Date.now()}`);
+  // No cache-buster: the backend serves multipart/x-mixed-replace and the
+  // browser keeps one connection open, refreshing the <img> automatically as
+  // new JPEG parts arrive. A unique src per render would force a new request
+  // on every render (one frame each, then ERR_INCOMPLETE_CHUNKED_ENCODING) and
+  // also break SSR hydration since Date.now() differs on server vs client.
+  // The Retry button below toggles `offline`, which remounts the <img> and
+  // naturally opens a fresh stream.
 
   return (
     <div className="min-h-screen bg-surface text-on-surface flex justify-center">
@@ -48,7 +53,7 @@ function FamilyLive() {
             <div className="aspect-video relative bg-black flex items-center justify-center">
               {!offline ? (
                 <img
-                  src={src}
+                  src={VIDEO_URL}
                   alt="Live camera feed"
                   className="w-full h-full object-contain"
                   onError={() => setOffline(true)}
