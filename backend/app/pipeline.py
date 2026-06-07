@@ -88,6 +88,10 @@ class Pipeline:
             except asyncio.QueueFull:
                 log.warning("subscriber queue full; dropping event %s", event.type)
 
+    def snapshot(self) -> tuple[Any, dict[str, DetectionResult]]:
+        """Latest frame + per-detector results, for the dashboard video feed."""
+        return self._latest_frame, dict(self._latest_results)
+
     def _emit_from_agent(self, event_type: str, payload: dict[str, Any]) -> None:
         # The agent's on_event hook is sync-or-async; we just fan out as-is.
         self._emit(Event(type=f"agent_{event_type}" if not event_type.startswith("agent_") else event_type, payload=payload))

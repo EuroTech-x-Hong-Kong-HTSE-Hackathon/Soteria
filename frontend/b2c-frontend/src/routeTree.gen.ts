@@ -16,6 +16,7 @@ import { Route as ResidentSupportRouteImport } from './routes/resident.support'
 import { Route as ResidentNotifiedRouteImport } from './routes/resident.notified'
 import { Route as ResidentCheckInRouteImport } from './routes/resident.check-in'
 import { Route as FamilySupportRouteImport } from './routes/family.support'
+import { Route as FamilyLiveRouteImport } from './routes/family.live'
 import { Route as FamilyAlertRouteImport } from './routes/family.alert'
 
 const IndexRoute = IndexRouteImport.update({
@@ -53,6 +54,11 @@ const FamilySupportRoute = FamilySupportRouteImport.update({
   path: '/family/support',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FamilyLiveRoute = FamilyLiveRouteImport.update({
+  id: '/family/live',
+  path: '/family/live',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FamilyAlertRoute = FamilyAlertRouteImport.update({
   id: '/family/alert',
   path: '/family/alert',
@@ -62,6 +68,7 @@ const FamilyAlertRoute = FamilyAlertRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/family/alert': typeof FamilyAlertRoute
+  '/family/live': typeof FamilyLiveRoute
   '/family/support': typeof FamilySupportRoute
   '/resident/check-in': typeof ResidentCheckInRoute
   '/resident/notified': typeof ResidentNotifiedRoute
@@ -72,6 +79,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/family/alert': typeof FamilyAlertRoute
+  '/family/live': typeof FamilyLiveRoute
   '/family/support': typeof FamilySupportRoute
   '/resident/check-in': typeof ResidentCheckInRoute
   '/resident/notified': typeof ResidentNotifiedRoute
@@ -83,6 +91,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/family/alert': typeof FamilyAlertRoute
+  '/family/live': typeof FamilyLiveRoute
   '/family/support': typeof FamilySupportRoute
   '/resident/check-in': typeof ResidentCheckInRoute
   '/resident/notified': typeof ResidentNotifiedRoute
@@ -95,6 +104,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/family/alert'
+    | '/family/live'
     | '/family/support'
     | '/resident/check-in'
     | '/resident/notified'
@@ -105,6 +115,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/family/alert'
+    | '/family/live'
     | '/family/support'
     | '/resident/check-in'
     | '/resident/notified'
@@ -115,6 +126,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/family/alert'
+    | '/family/live'
     | '/family/support'
     | '/resident/check-in'
     | '/resident/notified'
@@ -126,6 +138,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   FamilyAlertRoute: typeof FamilyAlertRoute
+  FamilyLiveRoute: typeof FamilyLiveRoute
   FamilySupportRoute: typeof FamilySupportRoute
   ResidentCheckInRoute: typeof ResidentCheckInRoute
   ResidentNotifiedRoute: typeof ResidentNotifiedRoute
@@ -185,6 +198,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FamilySupportRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/family/live': {
+      id: '/family/live'
+      path: '/family/live'
+      fullPath: '/family/live'
+      preLoaderRoute: typeof FamilyLiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/family/alert': {
       id: '/family/alert'
       path: '/family/alert'
@@ -198,6 +218,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   FamilyAlertRoute: FamilyAlertRoute,
+  FamilyLiveRoute: FamilyLiveRoute,
   FamilySupportRoute: FamilySupportRoute,
   ResidentCheckInRoute: ResidentCheckInRoute,
   ResidentNotifiedRoute: ResidentNotifiedRoute,
