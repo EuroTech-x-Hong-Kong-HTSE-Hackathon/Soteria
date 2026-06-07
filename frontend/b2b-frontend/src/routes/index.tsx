@@ -14,7 +14,7 @@ export const Route = createFileRoute("/")({
 
 const stats = [
   { value: "42", label: "cameras", state: "Online", icon: "videocam", positive: true },
-  { value: "8", label: "clusters", state: "Active zones", icon: "hub" },
+  { value: "5", label: "clusters", state: "Active zones", icon: "hub" },
   { value: "2", label: "events", state: "Needs review", icon: "visibility", warn: true },
   { value: "0", label: "critical", state: "All clear", icon: "verified_user", positive: true },
 ];
