@@ -13,11 +13,13 @@ from collections.abc import Callable
 from app.config import settings
 from app.perception.base import Detector
 from app.perception.fall_detector import FallDetector
+from app.perception.pose_fall_detector import PoseFallDetector
 
 log = logging.getLogger(__name__)
 
 _BUILDERS: dict[str, Callable[[], Detector]] = {
-    "fall": FallDetector,
+    "fall": PoseFallDetector,  # YOLO-pose + posture heuristic (default)
+    "fall_box": FallDetector,  # legacy bounding-box classifier (fallback)
     # "intruder": IntruderDetector,
     # "heart_attack": HeartAttackDetector,
 }
