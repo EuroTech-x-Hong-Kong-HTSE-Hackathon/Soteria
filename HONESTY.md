@@ -1,40 +1,30 @@
 # HONESTY.md
 
-## Project Origin
-
-This project was conceived entirely during the hackathon. Prior to the event, team members had not planned, designed, prototyped, or developed this idea in any form.
-
-## What Existed Before the Hackathon
-
-Nothing related to this project existed before the hackathon. There were no prior codebases, prototypes, designs, business plans, research projects, or implementations associated with this idea.
-
-## What Was Built During the Hackathon
-
-All brainstorming, planning, design decisions, development work, documentation, and project materials were created during the hackathon period.
-
-## Pre-Existing Assets, Libraries, or Components
-
-No custom pre-existing assets, proprietary components, or previously developed project code were brought into the hackathon.
-
-The project may use standard publicly available tools, frameworks, libraries, or services commonly used for software development, but no project-specific work was prepared in advance.
-
-## Functional Status
-
-All work associated with this project was created during the hackathon.
-
-## Mocked, Simulated, or Unfinished Components
-
-There were no pre-built mocked or simulated components brought into the event. Any incomplete functionality reflects work that remained unfinished during the hackathon itself.
-
-## Declaration
-
-We affirm that this project idea originated during the hackathon and was not pre-planned, pre-developed, or prepared beforehand. To the best of our knowledge, all project-specific work was initiated and carried out during the official hackathon period.
 > Mandatory disclosure for the hackathon. Disclosed shortcuts cost nothing;
 > hidden ones are penalized. This file is written from the **executed code
 > path**, not from `README.md` claims, planning docs, or commit messages —
 > every entry below is verifiable against `file:line`.
 
 ---
+
+## 0. Project origin declaration
+
+This project was conceived entirely during the hackathon. Prior to the event, team members had not planned, designed, prototyped, or developed this idea in any form.
+
+**What existed before the hackathon.** Nothing related to this project existed before the hackathon. There were no prior codebases, prototypes, designs, business plans, research projects, or implementations associated with this idea.
+
+**What was built during the hackathon.** All brainstorming, planning, design decisions, development work, documentation, and project materials were created during the hackathon period.
+
+**Pre-existing assets, libraries, or components.** No custom pre-existing assets, proprietary components, or previously developed project code were brought into the hackathon. The project uses standard publicly available tools, frameworks, libraries, or services commonly used for software development, but no project-specific work was prepared in advance.
+
+**Functional status.** All work associated with this project was created during the hackathon.
+
+**Mocked, simulated, or unfinished components.** There were no pre-built mocked or simulated components brought into the event. Any incomplete functionality reflects work that remained unfinished during the hackathon itself; §3 below is the full disclosure of which parts that affects.
+
+**Declaration.** We affirm that this project idea originated during the hackathon and was not pre-planned, pre-developed, or prepared beforehand. To the best of our knowledge, all project-specific work was initiated and carried out during the official hackathon period.
+
+---
+
 
 ## 1. Team — who did what
 
@@ -45,12 +35,14 @@ We affirm that this project idea originated during the hackathon and was not pre
 | Declan Kene Chukwu | (declan-chukwu / repo owner) | declan.chukwu@ucdconnect.ie | 32 | Project scaffold, alerts (Telegram backend + snapshot path), perception pipeline orchestration (`pipeline.py` candidate queue + agent worker + recovery debounce + display loop), config + .env handling, walking skeleton, run_pipeline entry, fall-box detector (HF), CLAUDE.md / README / docs. Authored the **B2C** front-end via Lovable.dev (committed locally as `af02bf0 b2c frontend imported`). |
 | Abdul (`Asav23`) | Asav23 | wma.adesanya@gmail.com | 5 | Local LLM agent loop (Ollama tool-calling, `agent/agent.py` + `agent/backends.py` + `agent/tools.py`), event-log primitive, scam-call detector (`audio/scam_detector.py`), pose-based fall detector (`perception/pose_fall_detector.py` — the **default** in production), FastAPI MJPEG `/video` + `/events` WebSocket wiring (`app/main.py`), B2C live-feed page wiring (`routes/family.live.tsx`). |
 | Sarthak | (no direct git commits) | — | 0 (via tools, see below) | **Designed both front-ends in Google Stitch** (`frontend/STITCH_PROMPTS.md` is his prompt set). Authored the **B2B** operator dashboard via Lovable.dev; the generated code reached this repo when Declan pulled it down and committed it locally as `678f510 added b2b frontend`. |
+| Abdellahi | (no direct git commits) | — | 0 | **Ideation** (helped shape the problem framing and product scope), **business pitch video**, and **technical demo video**. Did not commit code. |
 
 Sarthak does not appear in `git shortlog` because his contributions shipped
 through Stitch (design output committed by Declan) and Lovable.dev (project
-generated under his account, then pulled into this repo). We're disclosing
-this explicitly so the contributor list reflects the real team, not just
-who pushed.
+generated under his account, then pulled into this repo). Abdellahi's
+contributions are off-repo (video + ideation), so he also doesn't appear in
+the commit log. We're disclosing both explicitly so the contributor list
+reflects the real team, not just who pushed.
 
 ---
 
