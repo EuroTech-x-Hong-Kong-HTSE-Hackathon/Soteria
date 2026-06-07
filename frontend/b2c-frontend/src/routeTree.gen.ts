@@ -9,16 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as PerimeterRouteImport } from './routes/perimeter'
-import { Route as NotificationsRouteImport } from './routes/notifications'
-import { Route as ElderlyRouteImport } from './routes/elderly'
-import { Route as ClustersRouteImport } from './routes/clusters'
-import { Route as AccessRouteImport } from './routes/access'
 import { Route as IndexRouteImport } from './routes/index'
-<<<<<<< HEAD
-import { Route as IncidentsPerimeterRouteImport } from './routes/incidents.perimeter'
-import { Route as EventsPackageRouteImport } from './routes/events.package'
-=======
 import { Route as ResidentIndexRouteImport } from './routes/resident.index'
 import { Route as FamilyIndexRouteImport } from './routes/family.index'
 import { Route as ResidentSupportRouteImport } from './routes/resident.support'
@@ -26,48 +17,12 @@ import { Route as ResidentNotifiedRouteImport } from './routes/resident.notified
 import { Route as ResidentCheckInRouteImport } from './routes/resident.check-in'
 import { Route as FamilySupportRouteImport } from './routes/family.support'
 import { Route as FamilyAlertRouteImport } from './routes/family.alert'
->>>>>>> e6c874ee848cc61b9e38eed57db96f506df3bf21
 
-const PerimeterRoute = PerimeterRouteImport.update({
-  id: '/perimeter',
-  path: '/perimeter',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NotificationsRoute = NotificationsRouteImport.update({
-  id: '/notifications',
-  path: '/notifications',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ElderlyRoute = ElderlyRouteImport.update({
-  id: '/elderly',
-  path: '/elderly',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ClustersRoute = ClustersRouteImport.update({
-  id: '/clusters',
-  path: '/clusters',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AccessRoute = AccessRouteImport.update({
-  id: '/access',
-  path: '/access',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-<<<<<<< HEAD
-const IncidentsPerimeterRoute = IncidentsPerimeterRouteImport.update({
-  id: '/incidents/perimeter',
-  path: '/incidents/perimeter',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EventsPackageRoute = EventsPackageRouteImport.update({
-  id: '/events/package',
-  path: '/events/package',
-=======
 const ResidentIndexRoute = ResidentIndexRouteImport.update({
   id: '/resident/',
   path: '/resident/',
@@ -101,31 +56,11 @@ const FamilySupportRoute = FamilySupportRouteImport.update({
 const FamilyAlertRoute = FamilyAlertRouteImport.update({
   id: '/family/alert',
   path: '/family/alert',
->>>>>>> e6c874ee848cc61b9e38eed57db96f506df3bf21
   getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-<<<<<<< HEAD
-  '/access': typeof AccessRoute
-  '/clusters': typeof ClustersRoute
-  '/elderly': typeof ElderlyRoute
-  '/notifications': typeof NotificationsRoute
-  '/perimeter': typeof PerimeterRoute
-  '/events/package': typeof EventsPackageRoute
-  '/incidents/perimeter': typeof IncidentsPerimeterRoute
-}
-export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/access': typeof AccessRoute
-  '/clusters': typeof ClustersRoute
-  '/elderly': typeof ElderlyRoute
-  '/notifications': typeof NotificationsRoute
-  '/perimeter': typeof PerimeterRoute
-  '/events/package': typeof EventsPackageRoute
-  '/incidents/perimeter': typeof IncidentsPerimeterRoute
-=======
   '/family/alert': typeof FamilyAlertRoute
   '/family/support': typeof FamilySupportRoute
   '/resident/check-in': typeof ResidentCheckInRoute
@@ -143,20 +78,10 @@ export interface FileRoutesByTo {
   '/resident/support': typeof ResidentSupportRoute
   '/family': typeof FamilyIndexRoute
   '/resident': typeof ResidentIndexRoute
->>>>>>> e6c874ee848cc61b9e38eed57db96f506df3bf21
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-<<<<<<< HEAD
-  '/access': typeof AccessRoute
-  '/clusters': typeof ClustersRoute
-  '/elderly': typeof ElderlyRoute
-  '/notifications': typeof NotificationsRoute
-  '/perimeter': typeof PerimeterRoute
-  '/events/package': typeof EventsPackageRoute
-  '/incidents/perimeter': typeof IncidentsPerimeterRoute
-=======
   '/family/alert': typeof FamilyAlertRoute
   '/family/support': typeof FamilySupportRoute
   '/resident/check-in': typeof ResidentCheckInRoute
@@ -164,41 +89,11 @@ export interface FileRoutesById {
   '/resident/support': typeof ResidentSupportRoute
   '/family/': typeof FamilyIndexRoute
   '/resident/': typeof ResidentIndexRoute
->>>>>>> e6c874ee848cc61b9e38eed57db96f506df3bf21
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-<<<<<<< HEAD
-    | '/access'
-    | '/clusters'
-    | '/elderly'
-    | '/notifications'
-    | '/perimeter'
-    | '/events/package'
-    | '/incidents/perimeter'
-  fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/access'
-    | '/clusters'
-    | '/elderly'
-    | '/notifications'
-    | '/perimeter'
-    | '/events/package'
-    | '/incidents/perimeter'
-  id:
-    | '__root__'
-    | '/'
-    | '/access'
-    | '/clusters'
-    | '/elderly'
-    | '/notifications'
-    | '/perimeter'
-    | '/events/package'
-    | '/incidents/perimeter'
-=======
     | '/family/alert'
     | '/family/support'
     | '/resident/check-in'
@@ -226,20 +121,10 @@ export interface FileRouteTypes {
     | '/resident/support'
     | '/family/'
     | '/resident/'
->>>>>>> e6c874ee848cc61b9e38eed57db96f506df3bf21
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-<<<<<<< HEAD
-  AccessRoute: typeof AccessRoute
-  ClustersRoute: typeof ClustersRoute
-  ElderlyRoute: typeof ElderlyRoute
-  NotificationsRoute: typeof NotificationsRoute
-  PerimeterRoute: typeof PerimeterRoute
-  EventsPackageRoute: typeof EventsPackageRoute
-  IncidentsPerimeterRoute: typeof IncidentsPerimeterRoute
-=======
   FamilyAlertRoute: typeof FamilyAlertRoute
   FamilySupportRoute: typeof FamilySupportRoute
   ResidentCheckInRoute: typeof ResidentCheckInRoute
@@ -247,46 +132,10 @@ export interface RootRouteChildren {
   ResidentSupportRoute: typeof ResidentSupportRoute
   FamilyIndexRoute: typeof FamilyIndexRoute
   ResidentIndexRoute: typeof ResidentIndexRoute
->>>>>>> e6c874ee848cc61b9e38eed57db96f506df3bf21
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/perimeter': {
-      id: '/perimeter'
-      path: '/perimeter'
-      fullPath: '/perimeter'
-      preLoaderRoute: typeof PerimeterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/notifications': {
-      id: '/notifications'
-      path: '/notifications'
-      fullPath: '/notifications'
-      preLoaderRoute: typeof NotificationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/elderly': {
-      id: '/elderly'
-      path: '/elderly'
-      fullPath: '/elderly'
-      preLoaderRoute: typeof ElderlyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/clusters': {
-      id: '/clusters'
-      path: '/clusters'
-      fullPath: '/clusters'
-      preLoaderRoute: typeof ClustersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/access': {
-      id: '/access'
-      path: '/access'
-      fullPath: '/access'
-      preLoaderRoute: typeof AccessRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -294,20 +143,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-<<<<<<< HEAD
-    '/incidents/perimeter': {
-      id: '/incidents/perimeter'
-      path: '/incidents/perimeter'
-      fullPath: '/incidents/perimeter'
-      preLoaderRoute: typeof IncidentsPerimeterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/events/package': {
-      id: '/events/package'
-      path: '/events/package'
-      fullPath: '/events/package'
-      preLoaderRoute: typeof EventsPackageRouteImport
-=======
     '/resident/': {
       id: '/resident/'
       path: '/resident'
@@ -355,7 +190,6 @@ declare module '@tanstack/react-router' {
       path: '/family/alert'
       fullPath: '/family/alert'
       preLoaderRoute: typeof FamilyAlertRouteImport
->>>>>>> e6c874ee848cc61b9e38eed57db96f506df3bf21
       parentRoute: typeof rootRouteImport
     }
   }
@@ -363,15 +197,6 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-<<<<<<< HEAD
-  AccessRoute: AccessRoute,
-  ClustersRoute: ClustersRoute,
-  ElderlyRoute: ElderlyRoute,
-  NotificationsRoute: NotificationsRoute,
-  PerimeterRoute: PerimeterRoute,
-  EventsPackageRoute: EventsPackageRoute,
-  IncidentsPerimeterRoute: IncidentsPerimeterRoute,
-=======
   FamilyAlertRoute: FamilyAlertRoute,
   FamilySupportRoute: FamilySupportRoute,
   ResidentCheckInRoute: ResidentCheckInRoute,
@@ -379,8 +204,17 @@ const rootRouteChildren: RootRouteChildren = {
   ResidentSupportRoute: ResidentSupportRoute,
   FamilyIndexRoute: FamilyIndexRoute,
   ResidentIndexRoute: ResidentIndexRoute,
->>>>>>> e6c874ee848cc61b9e38eed57db96f506df3bf21
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
