@@ -4,7 +4,8 @@ type Tab = { to: string; icon: string; label: string };
 
 const TABS: Tab[] = [
   { to: "/family", icon: "home_filled", label: "Home" },
-  { to: "/family/alert", icon: "visibility", label: "Feeds" },
+  { to: "/family/live", icon: "videocam", label: "Live Feed" },
+  { to: "/family/alert", icon: "visibility", label: "Alert" },
   { to: "/family/support", icon: "help", label: "Support" },
 ];
 
