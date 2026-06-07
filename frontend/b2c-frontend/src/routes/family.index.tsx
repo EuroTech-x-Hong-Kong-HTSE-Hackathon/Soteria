@@ -74,8 +74,8 @@ function FamilyHome() {
             </h3>
             <div className="flex gap-md overflow-x-auto pb-sm no-scrollbar">
               <Avatar initial="S" name="You" online />
-              <Avatar initial="T" name="Tom" />
-              <Avatar initial="A" name="Anna" online />
+              <Avatar initial="T" name="Carer Tom" />
+              <Avatar initial="A" name="Margaret" online />
               <Avatar initial="D" name="Dr. P" />
             </div>
           </section>

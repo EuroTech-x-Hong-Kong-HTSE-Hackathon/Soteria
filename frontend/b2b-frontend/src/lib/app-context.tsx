@@ -241,8 +241,8 @@ export type PerimeterFeed = {
 
 export const PERIMETER_FEEDS: PerimeterFeed[] = [
   { id: "f1", cam: "P-01 NE Corner", zone: "Northeast fence", zoneZh: "东北围栏", status: "ok", note: "All clear", noteZh: "正常", img: "https://images.unsplash.com/photo-1547036967-23d11aacaee0?q=80&w=900&auto=format&fit=crop" },
-  { id: "f2", cam: "P-02 East Wall", zone: "East boundary", zoneZh: "东侧边界", status: "ok", note: "Routine motion · branches", noteZh: "正常 · 树枝晃动", img: "https://images.unsplash.com/photo-1521120098171-c3aab7d5d6d4?q=80&w=900&auto=format&fit=crop" },
-  { id: "f3", cam: "P-04 Rear Wall", zone: "South-east rear", zoneZh: "东南后墙", status: "alert", note: "Person crossing boundary", noteZh: "人员越界", img: "https://images.unsplash.com/photo-1614850715649-1d0106293cb1?q=80&w=900&auto=format&fit=crop" },
+  { id: "f2", cam: "P-02 East Wall", zone: "East boundary", zoneZh: "东侧边界", status: "ok", note: "Routine motion · branches", noteZh: "正常 · 树枝晃动", img: "/east_wall.png" },
+  { id: "f3", cam: "P-04 Rear Wall", zone: "South-east rear", zoneZh: "东南后墙", status: "alert", note: "Person crossing boundary", noteZh: "人员越界", img: "/jumping_wall.png" },
   { id: "f4", cam: "P-05 South Fence", zone: "South perimeter", zoneZh: "南侧周界", status: "ok", note: "All clear", noteZh: "正常", img: "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?q=80&w=900&auto=format&fit=crop" },
 ];
 

@@ -59,6 +59,12 @@ class Pipeline:
         self._subscribers: list[asyncio.Queue[Event]] = []
         self._latest_frame: Any = None
         self._latest_results: dict[str, DetectionResult] = {}
+        # Snapshot captured at the moment of confirmed escalation, served back to
+        # dashboard subscribers via /alerts/latest/snapshot.jpg. Independent of
+        # SEND_SNAPSHOT_ON_ALERT — that flag controls *outbound* (Telegram)
+        # egress; this is in-process, never leaves the device.
+        self._last_alert_snapshot: bytes | None = None
+        self._last_alert_at: float = 0.0
         self._stop = asyncio.Event()
 
         # Build the alerter ourselves so we can register a snapshot provider
@@ -121,6 +127,14 @@ class Pipeline:
         capture loop has produced its first frame.
         """
         return self._latest_frame, dict(self._latest_results)
+
+    def last_alert_snapshot(self) -> tuple[bytes | None, float]:
+        """Return the JPEG snapshot captured at the moment of the most recent
+        confirmed escalation, plus its timestamp (or 0.0 if none yet).
+
+        Served to dashboard subscribers via /alerts/latest/snapshot.jpg.
+        """
+        return self._last_alert_snapshot, self._last_alert_at
 
     def _emit_from_agent(self, event_type: str, payload: dict[str, Any]) -> None:
         # The agent's on_event hook is sync-or-async; we just fan out as-is.
@@ -271,9 +285,22 @@ class Pipeline:
                 result = await self.agent.run(candidate)
                 outcome = "alert" if result.escalated else "dismissed"
                 log.info("worker: %s — %s", outcome, result.summary)
+                # Capture the in-process snapshot for the dashboard alert page
+                # at the *moment* of escalation. Separate from the Telegram
+                # snapshot path: this never leaves the device.
+                if result.escalated:
+                    snap = self._get_snapshot_bytes()
+                    if snap is not None:
+                        self._last_alert_snapshot = snap
+                        self._last_alert_at = time.time()
                 self._emit(Event(
                     type=outcome,
-                    payload={"escalated": result.escalated, "summary": result.summary},
+                    payload={
+                        "escalated": result.escalated,
+                        "summary": result.summary,
+                        "candidate": candidate,
+                        "alert_at": self._last_alert_at if result.escalated else 0.0,
+                    },
                 ))
             except Exception as exc:
                 log.exception("agent run failed")

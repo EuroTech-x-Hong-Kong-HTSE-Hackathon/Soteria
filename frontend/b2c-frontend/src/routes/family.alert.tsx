@@ -21,11 +21,56 @@ function FamilyAlert() {
   const [holdProgress, setHoldProgress] = useState(0);
   const holdRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Live alert state from the backend. Until an `alert` event arrives over
+  // the WebSocket, the page renders the existing demo UI (the hardcoded
+  // countdown, the placeholder image, and the canned agent quote). Once a
+  // real fall is confirmed, those three pieces switch to real backend data.
+  const [alertActive, setAlertActive] = useState(false);
+  const [alertSummary, setAlertSummary] = useState<string | null>(null);
+  const [snapshotKey, setSnapshotKey] = useState(0);
+  const [snapshotUrl, setSnapshotUrl] = useState<string | null>(null);
+
   useEffect(() => {
-    if (timeLeft <= 0) return;
+    if (typeof window === "undefined") return;
+    const override = (import.meta as { env?: { VITE_BACKEND_URL?: string } }).env
+      ?.VITE_BACKEND_URL;
+    const httpBase = override
+      ? override.replace(/\/$/, "")
+      : `${window.location.protocol}//${window.location.hostname}:8000`;
+    const wsBase = httpBase.replace(/^http/, "ws");
+    const ws = new WebSocket(`${wsBase}/events`);
+    let cancelled = false;
+
+    ws.onmessage = (evt) => {
+      if (cancelled) return;
+      try {
+        const msg = JSON.parse(evt.data) as { type?: string; payload?: Record<string, unknown> };
+        if (msg.type === "alert" && msg.payload?.escalated) {
+          const summary = (msg.payload?.summary as string | undefined) ?? null;
+          setAlertSummary(summary);
+          setAlertActive(true);
+          setSnapshotKey((k) => k + 1);
+          setSnapshotUrl(`${httpBase}/alerts/latest/snapshot.jpg`);
+          setTimeLeft(0); // real escalation already happened — stop the demo countdown
+        }
+      } catch {
+        // Ignore parse errors (e.g. binary frames, non-JSON pings).
+      }
+    };
+    ws.onerror = () => {
+      // Stay on demo UI if the socket isn't reachable.
+    };
+    return () => {
+      cancelled = true;
+      ws.close();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (alertActive || timeLeft <= 0) return;
     const t = setTimeout(() => setTimeLeft((s) => s - 1), 1000);
     return () => clearTimeout(t);
-  }, [timeLeft]);
+  }, [timeLeft, alertActive]);
 
   const startHold = () => {
     if (holdRef.current) clearInterval(holdRef.current);
@@ -66,19 +111,30 @@ function FamilyAlert() {
         <div className="flex-1 p-gutter flex flex-col gap-lg">
           <div className="rounded-xl overflow-hidden bg-surface-variant border border-outline-variant/50 flex flex-col">
             <div className="aspect-video relative bg-surface-container-high flex items-center justify-center overflow-hidden">
-              <div
-                className="absolute inset-0 bg-cover bg-center blur-md opacity-30"
-                style={{
-                  backgroundImage:
-                    "url('https://lh3.googleusercontent.com/aida-public/AB6AXuA7DeGLrDYypYEu36Bw0UC3kA2ue1Z_wITa3NPiOpZJAV1ZfrRiczKBzTVG5jQFUYdsL4cwwWIDDJoLtkI5CxBz5s03frNKs8nkqSZjz_3EVE90I57zKtOLCo49YCJyC1frkS_AQU86I81mIAA5okH1C8lnEGZweVc0t8zF3psSjpWDHFZGV9R29hePHmRnrC5a3RJilRX1e5k1BglUCW-XVVsU2lvQ3-tdm9tQhm7BPVJDrwUc2og8v1MgnUbbsRp0nFhcYBONVNnq')",
-                }}
-              />
-              <span
-                className="material-symbols-outlined text-tertiary-fixed-dim z-10"
-                style={{ fontSize: 72, opacity: 0.85 }}
-              >
-                accessibility_new
-              </span>
+              {alertActive && snapshotUrl ? (
+                <img
+                  key={snapshotKey}
+                  src={`${snapshotUrl}?t=${snapshotKey}`}
+                  alt="Snapshot at escalation"
+                  className="absolute inset-0 w-full h-full object-cover z-0"
+                />
+              ) : (
+                <div
+                  className="absolute inset-0 bg-cover bg-center blur-md opacity-30"
+                  style={{
+                    backgroundImage:
+                      "url('https://lh3.googleusercontent.com/aida-public/AB6AXuA7DeGLrDYypYEu36Bw0UC3kA2ue1Z_wITa3NPiOpZJAV1ZfrRiczKBzTVG5jQFUYdsL4cwwWIDDJoLtkI5CxBz5s03frNKs8nkqSZjz_3EVE90I57zKtOLCo49YCJyC1frkS_AQU86I81mIAA5okH1C8lnEGZweVc0t8zF3psSjpWDHFZGV9R29hePHmRnrC5a3RJilRX1e5k1BglUCW-XVVsU2lvQ3-tdm9tQhm7BPVJDrwUc2og8v1MgnUbbsRp0nFhcYBONVNnq')",
+                  }}
+                />
+              )}
+              {!alertActive && (
+                <span
+                  className="material-symbols-outlined text-tertiary-fixed-dim z-10"
+                  style={{ fontSize: 72, opacity: 0.85 }}
+                >
+                  accessibility_new
+                </span>
+              )}
               <div
                 className="absolute top-sm left-sm rounded-full flex items-center gap-xs px-sm py-xs z-20"
                 style={{ backgroundColor: "#16321F", color: "#4ADE80" }}
@@ -124,7 +180,9 @@ function FamilyAlert() {
                 smart_toy
               </span>
               <p className="text-body-md text-on-surface">
-                "I saw Margaret go to the floor in the lounge and she has not moved."
+                {alertActive && alertSummary
+                  ? alertSummary
+                  : "\"I saw Margaret go to the floor in the lounge and she has not moved.\""}
               </p>
             </div>
           </div>

@@ -17,7 +17,7 @@ const steps = [
   {
     t: "10:24 AM",
     label: "Parcel left",
-    img: "https://images.unsplash.com/photo-1587293852726-0d624afa24c8?q=80&w=600&auto=format&fit=crop",
+    img: "/parcel_left.png",
   },
   {
     t: "10:35 AM",
