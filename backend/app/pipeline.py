@@ -55,15 +55,27 @@ class Pipeline:
         self.event_log = event_log or EventLog()
         self.camera = camera or Camera()
         self.detectors = detectors if detectors is not None else build_enabled_detectors()
-        self.agent = agent or VerificationAgent(
-            event_log=self.event_log,
-            on_event=self._emit_from_agent,
-        )
         self._candidates: asyncio.Queue[dict[str, Any]] = asyncio.Queue()
         self._subscribers: list[asyncio.Queue[Event]] = []
         self._latest_frame: Any = None
         self._latest_results: dict[str, DetectionResult] = {}
         self._stop = asyncio.Event()
+
+        # Build the alerter ourselves so we can register a snapshot provider
+        # *before* the agent's escalate() tool calls it. Default off — the
+        # provider is wired but only consulted when SEND_SNAPSHOT_ON_ALERT=true.
+        from app.agent.tools import AgentTools
+        from app.alerts.base import get_alerter
+
+        self.alerter = get_alerter()
+        if hasattr(self.alerter, "snapshot_provider"):
+            self.alerter.snapshot_provider = self._get_snapshot_bytes
+
+        self.agent = agent or VerificationAgent(
+            tools=AgentTools(event_log=self.event_log, alerter=self.alerter),
+            event_log=self.event_log,
+            on_event=self._emit_from_agent,
+        )
 
     # --- subscription ---------------------------------------------------------
     def subscribe(self) -> AsyncIterator[Event]:
@@ -88,13 +100,39 @@ class Pipeline:
             except asyncio.QueueFull:
                 log.warning("subscriber queue full; dropping event %s", event.type)
 
-    def snapshot(self) -> tuple[Any, dict[str, DetectionResult]]:
-        """Latest frame + per-detector results, for the dashboard video feed."""
-        return self._latest_frame, dict(self._latest_results)
+    def _get_snapshot_bytes(self) -> bytes | None:
+        """JPEG-encode the most recent frame for the alerter (opt-in egress)."""
+        frame = self._latest_frame
+        if frame is None:
+            return None
+        try:
+            import cv2
+
+            ok, buf = cv2.imencode(".jpg", frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
+        except Exception:
+            return None
+        return buf.tobytes() if ok else None
 
     def _emit_from_agent(self, event_type: str, payload: dict[str, Any]) -> None:
         # The agent's on_event hook is sync-or-async; we just fan out as-is.
-        self._emit(Event(type=f"agent_{event_type}" if not event_type.startswith("agent_") else event_type, payload=payload))
+        full_type = event_type if event_type.startswith("agent_") else f"agent_{event_type}"
+        # Console visibility for the agent lifecycle — without this, agent
+        # events only reach dashboard subscribers and the terminal stays silent.
+        if event_type == "agent_started":
+            log.info("agent: started for %s", payload.get("detection"))
+        elif event_type == "agent_reasoning":
+            text = (payload.get("text") or "").strip().replace("\n", " ")
+            log.info("agent: reasoning step %s — %s", payload.get("step"), text[:160])
+        elif event_type == "agent_action":
+            log.info("agent: tool %s args=%s", payload.get("tool"), payload.get("arguments"))
+        elif event_type == "tool_result":
+            log.info("agent: tool %s result=%s", payload.get("tool"), str(payload.get("result"))[:160])
+        elif event_type == "agent_done":
+            log.info(
+                "agent: done escalated=%s confirmed=%s",
+                payload.get("escalated"), payload.get("confirmed"),
+            )
+        self._emit(Event(type=full_type, payload=payload))
 
     # --- main loop ------------------------------------------------------------
     async def run(self) -> None:
@@ -123,9 +161,11 @@ class Pipeline:
     # --- capture + detect -----------------------------------------------------
     async def _capture_loop(self) -> None:
         # Per-detector state: when did the current candidate start? have we already
-        # enqueued it? Tracked separately so detectors don't interfere.
+        # enqueued it? When did the latest negative streak begin? Tracked
+        # separately so detectors don't interfere.
         candidate_started: dict[str, float | None] = {d.name: None for d in self.detectors}
         candidate_active: dict[str, bool] = {d.name: False for d in self.detectors}
+        recovery_started: dict[str, float | None] = {d.name: None for d in self.detectors}
         frame_count = 0
         log_every = 15  # frames; ~once per half-second at 30fps
 
@@ -156,6 +196,9 @@ class Pipeline:
                 ))
 
                 if result.is_positive:
+                    # Cancel any pending recovery — a single positive frame
+                    # mid-fall is enough to reset the debounce timer.
+                    recovery_started[det.name] = None
                     if candidate_started[det.name] is None:
                         candidate_started[det.name] = time.time()
                     elapsed = time.time() - candidate_started[det.name]
@@ -164,18 +207,28 @@ class Pipeline:
                         self._record_candidate(det.name, result)
                 else:
                     if candidate_active[det.name]:
-                        # Detector lost the positive — likely recovery / movement.
-                        self.event_log.record(
-                            RECOVERY,
-                            is_fall=False,
-                            note=f"{det.name} detector no longer positive",
-                        )
-                        self._emit(Event(type="recovery", payload={"detector": det.name}))
-                        candidate_active[det.name] = False
+                        # Negative inside an active candidate — start (or continue)
+                        # the recovery debounce. Only fires RECOVERY once the
+                        # detector has stayed sub-threshold for the configured
+                        # window, so a single dropped frame doesn't dismiss
+                        # someone who's still on the floor.
+                        if recovery_started[det.name] is None:
+                            recovery_started[det.name] = time.time()
+                        elif time.time() - recovery_started[det.name] >= settings.pipeline_recovery_seconds:
+                            self.event_log.record(
+                                RECOVERY,
+                                is_fall=False,
+                                note=f"{det.name} detector sub-threshold for "
+                                     f"{settings.pipeline_recovery_seconds:.1f}s",
+                            )
+                            self._emit(Event(type="recovery", payload={"detector": det.name}))
+                            candidate_active[det.name] = False
+                            recovery_started[det.name] = None
+                            candidate_started[det.name] = None
                     elif candidate_started[det.name] is not None:
-                        # Brief blip didn't persist — log motion only.
+                        # Brief blip never reached candidate threshold — log motion.
                         self.event_log.record(MOTION, is_fall=False)
-                    candidate_started[det.name] = None
+                        candidate_started[det.name] = None
 
             # Yield to the loop so display + worker get scheduled.
             await asyncio.sleep(0)
@@ -204,10 +257,13 @@ class Pipeline:
                 candidate = await asyncio.wait_for(self._candidates.get(), timeout=0.5)
             except asyncio.TimeoutError:
                 continue
+            log.info("worker: picked up candidate %s", candidate)
             try:
                 result = await self.agent.run(candidate)
+                outcome = "alert" if result.escalated else "dismissed"
+                log.info("worker: %s — %s", outcome, result.summary)
                 self._emit(Event(
-                    type="alert" if result.escalated else "dismissed",
+                    type=outcome,
                     payload={"escalated": result.escalated, "summary": result.summary},
                 ))
             except Exception as exc:

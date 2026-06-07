@@ -131,14 +131,13 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
         "function": {
             "name": "start_verification_timer",
             "description": (
-                "Start a grace period before escalating, then report whether the "
-                "person recovered (got back up) or is still down."
+                "Start the configured grace period before escalating, then report "
+                "whether the person recovered (got back up) or is still down. The "
+                "duration is set by the operator — you do not choose it."
             ),
             "parameters": {
                 "type": "object",
-                "properties": {
-                    "seconds": {"type": "integer", "description": "Countdown length in seconds."}
-                },
+                "properties": {},
             },
         },
     },
